@@ -1,147 +1,105 @@
-// =====================================
-// LIFESTYLE WITH Dr. Rwaa
-// Website JavaScript
-// =====================================
 
-const TALLY_FORM_ID = "rjxNaL";
+document.addEventListener("DOMContentLoaded", function () {
+    const tallyForm = document.getElementById("tally-form");
+    const selectedServiceText = document.getElementById("selected-service-text");
+    const selectedPlan = document.getElementById("selected-plan");
+    const selectedPlanName = document.getElementById("selected-plan-name");
+    const confirmButton = document.getElementById("confirm-button");
+    const successMessage = document.getElementById("success-message");
+    const serviceCards = document.querySelectorAll(".service-card");
+    const currentYear = document.getElementById("current-year");
 
-const serviceButtons = document.querySelectorAll(
-  ".service-card"
-);
+    const tallyBaseUrl = "https://tally.so/embed/rjxNaL";
+    const tallyParameters =
+        "?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1";
 
-const selectedServiceName = document.getElementById(
-  "selected-service-name"
-);
+    let chosenService = "";
 
-const tallyForm = document.getElementById("tally-form");
+    // Update the footer year
+    if (currentYear) {
+        currentYear.textContent = new Date().getFullYear();
+    }
 
-const confirmButton = document.getElementById(
-  "confirm-button"
-);
+    // Select a service and move to registration
+    function selectService(service) {
+        chosenService = service;
 
-const successMessage = document.getElementById(
-  "success-message"
-);
+        if (selectedServiceText) {
+            selectedServiceText.textContent =
+                "You selected: " + service + ". Complete the form below to get started.";
+        }
 
-const confirmationBox = document.getElementById(
-  "confirmation-box"
-);
+        if (selectedPlan && selectedPlanName) {
+            selectedPlanName.textContent = service;
+            selectedPlan.hidden = false;
+        }
 
-const currentYear = document.getElementById(
-  "current-year"
-);
+        // Pass the selected service to Tally as a URL parameter.
+        // Add a hidden field named "service" in Tally to capture it.
+        if (tallyForm) {
+            const formUrl = new URL(tallyBaseUrl);
+            formUrl.searchParams.set("alignLeft", "1");
+            formUrl.searchParams.set("hideTitle", "1");
+            formUrl.searchParams.set("transparentBackground", "1");
+            formUrl.searchParams.set("dynamicHeight", "1");
+            formUrl.searchParams.set("service", service);
 
-let selectedService = "";
+            tallyForm.src = formUrl.toString();
+        }
 
-// =====================================
-// UPDATE FOOTER YEAR
-// =====================================
+        if (successMessage) {
+            successMessage.hidden = true;
+        }
 
-currentYear.textContent = new Date().getFullYear();
+        // Scroll to the registration section
+        const registrationSection = document.getElementById("registration");
 
-// =====================================
-// SERVICE SELECTION
-// =====================================
+        if (registrationSection) {
+            registrationSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+    }
 
-serviceButtons.forEach((button) => {
-  button.setAttribute("aria-pressed", "false");
+    // Attach click behavior to all six service buttons
+    serviceCards.forEach(function (card) {
+        card.addEventListener("click", function () {
+            const service = card.dataset.service;
 
-  button.addEventListener("click", () => {
-    selectedService = button.dataset.service;
-
-    // Update selected service text
-    selectedServiceName.textContent = selectedService;
-
-    // Highlight the selected service
-    serviceButtons.forEach((serviceButton) => {
-      const isSelected = serviceButton === button;
-
-      serviceButton.classList.toggle(
-        "is-selected",
-        isSelected
-      );
-
-      serviceButton.setAttribute(
-        "aria-pressed",
-        String(isSelected)
-      );
+            if (service) {
+                selectService(service);
+            }
+        });
     });
 
-    // Update Tally embed URL
-    const embedUrl = new URL(
-      `https://tally.so/embed/${TALLY_FORM_ID}`
-    );
+    // Confirmation message
+    if (confirmButton) {
+        confirmButton.addEventListener("click", function () {
+            if (!chosenService) {
+                alert("Please choose a nutrition plan first.");
+                document.getElementById("services").scrollIntoView({
+                    behavior: "smooth"
+                });
+                return;
+            }
 
-    embedUrl.searchParams.set("alignLeft", "1");
-    embedUrl.searchParams.set("hideTitle", "1");
-    embedUrl.searchParams.set(
-      "transparentBackground",
-      "1"
-    );
-    embedUrl.searchParams.set("dynamicHeight", "1");
+            const confirmed = window.confirm(
+                "Have you completed and submitted the registration form?"
+            );
 
-    // Pass the selected service to Tally.
-    // Add a hidden field named "service" in Tally
-    // to save this value with the registration.
-    embedUrl.searchParams.set(
-      "service",
-      selectedService
-    );
+            if (!confirmed) {
+                return;
+            }
 
-    tallyForm.src = embedUrl.toString();
+            if (successMessage) {
+                successMessage.hidden = false;
 
-    // Reset confirmation when changing services
-    successMessage.hidden = true;
-    confirmationBox.hidden = false;
-
-    confirmButton.disabled = false;
-
-    confirmButton.innerHTML =
-      'I Confirm My Details <span aria-hidden="true">→</span>';
-
-    // Scroll to the registration section
-    document
-      .getElementById("registration")
-      .scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-  });
+                successMessage.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+            }
+        });
+    }
 });
-
-// =====================================
-// CONFIRMATION BUTTON
-// =====================================
-
-confirmButton.addEventListener("click", () => {
-
-  if (!selectedService) {
-    alert("Please select a service first.");
-
-    document
-      .getElementById("services")
-      .scrollIntoView({
-        behavior: "smooth"
-      });
-
-    return;
-  }
-
-  // Show the confirmation message
-  successMessage.hidden = false;
-
-  confirmButton.disabled = true;
-
-  confirmButton.textContent = "Details Confirmed ✓";
-
-  // Bring the success message into view
-  successMessage.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
-  });
-
-});
-
-// =====================================
-// END
-// =====================================
